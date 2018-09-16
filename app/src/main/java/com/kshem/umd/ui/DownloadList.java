@@ -6,6 +6,7 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -37,6 +38,7 @@ public class DownloadList extends BaseAdapter {
     private Activity activity;
     private ArrayList<DownloadRequest> requests;
     private ThinDownloadManager downloadManager;
+    private String TAG = this.getClass().getSimpleName();
 
     public DownloadList(Activity activity, ArrayList<DownloadRequest> requests, ThinDownloadManager downloadManager){
         this.activity = activity;
@@ -125,7 +127,7 @@ public class DownloadList extends BaseAdapter {
             }
         });
 
-        Toast.makeText(activity, "Created an entry" + downloadRequest.getUri(), Toast.LENGTH_LONG).show();
+        Log.i(TAG, "Created an entry" + downloadRequest.getUri());
         return convertView;
     }
 

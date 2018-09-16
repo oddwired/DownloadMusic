@@ -1,6 +1,7 @@
 package com.kshem.umd;
 
 import android.app.Activity;
+import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -10,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import okhttp3.FormBody;
@@ -29,15 +31,12 @@ public class UMDSearch {
     }
 
     private Context context;
-    private OkHttpClient client;
     private SearchListener listener;
-    private boolean status = false;
-    private ArrayList<Song> songs;
+    private String TAG = this.getClass().getSimpleName();
 
     public UMDSearch(Activity activity){
         this.context = activity;
-        this.songs = new ArrayList<>();
-        this.client = Config.getNewHttpClient();
+
     }
 
     public void setResultListener(SearchListener listener){
@@ -46,7 +45,6 @@ public class UMDSearch {
 
     public void search(String query){
 
-        songs.clear();
         // Set up the post  data
         RequestBody data = new FormBody.Builder()
                 .add("q", query)
@@ -56,59 +54,84 @@ public class UMDSearch {
                 .build();
 
         Log.d("UMD : request url:",Config.APP_URL);
-        final Request request = new Request.Builder()
+        Request request = new Request.Builder()
                 .url(Config.APP_URL)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("User-agent", "Mozilla/5.0 (X11; Linux i686; rv:10.0) Gecko/20100101 Firefox/10.0")
                 .post(data)
                 .build();
 
-        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
+        Log.i(TAG, "search: "+ request.headers());
 
-                try {
-                    Response response = client.newCall(request).execute();
-                    status = response.isSuccessful();
+        new SearchTask(context, request, listener).execute();
+    }
 
-                    if(status){
-                        String responseString = response.body().string();
+    private static class SearchTask extends AsyncTask<Void, Void, ArrayList<Song>> {
 
-                        //The response string has a "(" at the beginning and ");" at the end,
-                        //therefore will cause an error if we try to create a JSON object from
-                        //the string
+        private WeakReference<Context> contextWeakReference;
+        private OkHttpClient client;
+        private Request request;
+        private ArrayList<Song> songs;
+        private SearchListener callback;
 
-                        responseString = responseString.substring(1, responseString.length() - 2);
+        private String TAG = "AsyncTask";
 
-                        JSONObject responseObject = new JSONObject(responseString);
+        SearchTask(Context context, Request request, SearchListener callback){
+            this.contextWeakReference = new WeakReference<>(context);
+            this.client = Config.getNewHttpClient();
+            this.request = request;
+            this.callback = callback;
+        }
 
-                        JSONArray responseData = responseObject.getJSONArray("response");
+        @Override
+        protected ArrayList<Song> doInBackground(Void... voids) {
 
-                        // Remember: The first item in the json array is not an object
-                        // and we don't need it.
-                        for(int i = 1; i < responseData.length(); i++){
-                            Song song = new Song(responseData.getJSONObject(i));
-                            songs.add(song);
-                        }
+            try {
+                Response response = client.newCall(request).execute();
+
+                Log.i(TAG, "doInBackground: "+ response.toString());
+
+                if(response.isSuccessful()){
+                    songs = new ArrayList<>();
+
+                    String responseString = response.body().string();
+
+                    //The response string has a "(" at the beginning and ");" at the end,
+                    //therefore will cause an error if we try to create a JSON object from
+                    //the string
+
+                    responseString = responseString.substring(1, responseString.length() - 2);
+
+                    JSONObject responseObject = new JSONObject(responseString);
+
+                    JSONArray responseData = responseObject.getJSONArray("response");
+
+                    // Remember: The first item in the json array is not an object
+                    // and we don't need it.
+                    for(int i = 1; i < responseData.length(); i++){
+                        Song song = new Song(responseData.getJSONObject(i));
+                        songs.add(song);
                     }
 
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
                 }
+                response.body().close();
 
-                return null;
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
             }
 
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
+            return songs;
+        }
 
-                if(status){
-                    listener.onSuccess(songs);
-                }else{
-                    listener.onFailure();
-                }
+        @Override
+        protected void onPostExecute(ArrayList<Song> songs) {
+            super.onPostExecute(songs);
+
+            if(songs != null){
+                callback.onSuccess(songs);
+            }else{
+                callback.onFailure();
             }
-        };
-
-        task.execute();
+        }
     }
 }

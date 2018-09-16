@@ -22,8 +22,8 @@ import okhttp3.TlsVersion;
  */
 
 public class Config {
-    public static final String APP_URL = "https://my-free-mp3.net/api/search.php";
-    public static final String SERVER_URL = "https://newtabs.stream/";
+    public static final String APP_URL = "https://my-free-mp3s.com/api/search.php";
+    public static final String SERVER_URL = "https://newtabz.stream/";
     public static final String DOWNLOAD_DIRECTORY = Environment.getExternalStorageDirectory() + File.separator + "UMD/";
 
     public static OkHttpClient.Builder enableTls12OnPreLollipop(OkHttpClient.Builder client) {
