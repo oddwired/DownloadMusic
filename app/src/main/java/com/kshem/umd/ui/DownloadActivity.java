@@ -17,6 +17,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,6 +36,8 @@ import com.thin.downloadmanager.DownloadRequest;
 import java.util.ArrayList;
 
 public class DownloadActivity extends AppCompatActivity {
+
+    private static final String TAG = DownloadActivity.class.getSimpleName();
 
     private boolean serviceBound = false;
     private DownloadService downloadService;
@@ -167,10 +170,11 @@ public class DownloadActivity extends AppCompatActivity {
                 for(Song song : searchResults){
                     if(song.isSelected()){
 
-                        Uri downloadUri = Uri.parse(Config.SERVER_URL + song.getSongId());
-                        Uri destinationUri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/UMD/"  + song.getName() + ".mp3");
+                        Uri downloadUri = Uri.parse(String.format(Config.SERVER_URL, song.getSongId()) );
+                        Uri destinationUri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/"  + song.getName() + ".mp3");
                         //Toast.makeText(getContext(), destinationUri.toString(), Toast.LENGTH_LONG).show();
 
+                        Log.i(TAG, "Song URL: " + downloadUri);
                         DownloadRequest downloadRequest = new DownloadRequest(downloadUri)
                                 .setDestinationURI(destinationUri).setPriority(DownloadRequest.Priority.HIGH)
                                 .setRetryPolicy(new DefaultRetryPolicy())

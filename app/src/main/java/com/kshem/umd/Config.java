@@ -22,8 +22,8 @@ import okhttp3.TlsVersion;
  */
 
 public class Config {
-    public static final String APP_URL = "https://my-free-mp3s.com/api/search.php";
-    public static final String SERVER_URL = "https://newtabz.stream/";
+    public static final String APP_URL = "https://myfreemp3cc.com/api/search.php";
+    public static final String SERVER_URL = "https://sharethisurls.com/api/get_song.php?id=%s";
     public static final String DOWNLOAD_DIRECTORY = Environment.getExternalStorageDirectory() + File.separator + "UMD/";
 
     public static String STARTFOREGROUND_ACTION = "com.kshem.umd.action.startforeground";
