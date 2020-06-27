@@ -26,6 +26,11 @@ public class Config {
     public static final String SERVER_URL = "https://newtabz.stream/";
     public static final String DOWNLOAD_DIRECTORY = Environment.getExternalStorageDirectory() + File.separator + "UMD/";
 
+    public static String STARTFOREGROUND_ACTION = "com.kshem.umd.action.startforeground";
+    public static String STOPFOREGROUND_ACTION = "com.kshem.umd.action.stopforeground";
+    public static String PAUSE_ACTION = "com.kshem.umd.action.pausedownload";
+    public static String CANCEL_ACTION = "com.kshem.umd.action.canceldownload";
+
     public static OkHttpClient.Builder enableTls12OnPreLollipop(OkHttpClient.Builder client) {
         if (Build.VERSION.SDK_INT >= 16 && Build.VERSION.SDK_INT < 22) {
             try {
